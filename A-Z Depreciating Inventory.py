@@ -101,12 +101,11 @@ common_items_export = common_items[['Item ID', "Inactive", 'Description for Sale
 # Adding in depreciated inventory information to the export
 for index, row in common_items_export.iterrows():
     Description = str(row['Description for Sales'])
-    part_number = row['Part Number']
 
     mmYYYY = datetime.datetime.now().strftime("%m%Y")
 
     Description += " - DEP INV"
-    part_number = f"DEPINV {mmYYYY}-10YRS"
+    part_number = f"DEPINV{mmYYYY}-{row['Item ID']}"
 
     # check if description is less than or equal to 160 characters
     while len(Description) > 160:
@@ -123,3 +122,4 @@ for index, row in common_items_export.iterrows():
 # Exporting to CSV
 common_items_export.to_csv(export_loc, index=False, encoding='utf-8-sig')
 print("\nCommon items exported successfully.\n")
+
