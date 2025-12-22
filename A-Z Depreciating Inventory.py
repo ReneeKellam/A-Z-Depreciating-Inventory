@@ -119,7 +119,7 @@ for index, row in common_items_export.iterrows():
     part_number = f"DEPINV{mmYYYY}-{row['Item ID']}"
 
     # check if description is less than or equal to 160 characters
-    while len(Description) > 300:
+    while len(Description) > 160:
         print(f"\n\n{index+1}/{len(common_items_export)}: Description of {row['Item ID']} exceeds 160 characters:")
         print(Description)
         print("Please shorten the description manually.")
@@ -133,3 +133,4 @@ for index, row in common_items_export.iterrows():
 # Exporting to CSV
 common_items_export.to_csv(export_loc, index=False, encoding='utf-8-sig')
 print("\nCommon items exported successfully.\n")
+
