@@ -7,7 +7,6 @@ invcurrent_loc = r"C:\Users\azradmin\Downloads\Invcurrent.csv"
 invpast_loc = r"C:\Users\azradmin\Downloads\Invpast.xlsx"
 export_loc = r"C:\Users\azradmin\Downloads\Common_Items.csv"
 
-
 # Python library management to ensure required packages are installed
 import sys
 import subprocess
@@ -42,6 +41,7 @@ except ImportError:
 
 # Start of the main script
 print("\nStarting inventory comparison script...")
+
 # Try different encodings for the CSV file
 try:
     invcurrent = pd.read_csv(invcurrent_loc, 
@@ -55,7 +55,6 @@ except UnicodeDecodeError:
                               low_memory=False, encoding='utf-8', errors='ignore')
 
 invpast = pd.read_excel(invpast_loc)
-
 
 # Remove Inactive items from both dataframes
 print("\nRemoving inactive items...")
@@ -90,6 +89,11 @@ else:
 # Removing new equipment items, assemblies, and services (Item Class must be 0)
 common_items = common_items[common_items['Item Class'] == 0]
 
+# Filter out known problematic items
+problematic_items = ['DEPOSIT', 'NEW', 'NOTICE', 'STORAGE', 'USED', 'WARRANTY', 'CAP_DU30HFA']  # problematic Item IDs
+common_items = common_items[~common_items['Item ID'].isin(problematic_items)]
+
+# Output comparison results
 print("\nComparison Results:")
 print(f"Total items in invcurrent: {len(invcurrent)}")
 print(f"Total items in invpast: {len(invpast)}")
@@ -97,10 +101,17 @@ print(f"Common items found: {len(common_items)}")
 
 # Preparing export dataframe
 common_items_export = common_items[['Item ID', "Inactive", 'Description for Sales', "Part Number"]].reset_index(drop=True)
+common_items_export = common_items_export.astype({
+    'Item ID': 'str',
+    'Inactive': 'str', 
+    'Description for Sales': 'str',
+    'Part Number': 'str'
+})
 
 # Adding in depreciated inventory information to the export
 for index, row in common_items_export.iterrows():
     Description = str(row['Description for Sales'])
+    part_number = row['Part Number']
 
     mmYYYY = datetime.datetime.now().strftime("%m%Y")
 
@@ -108,7 +119,7 @@ for index, row in common_items_export.iterrows():
     part_number = f"DEPINV{mmYYYY}-{row['Item ID']}"
 
     # check if description is less than or equal to 160 characters
-    while len(Description) > 160:
+    while len(Description) > 300:
         print(f"\n\n{index+1}/{len(common_items_export)}: Description of {row['Item ID']} exceeds 160 characters:")
         print(Description)
         print("Please shorten the description manually.")
@@ -122,4 +133,3 @@ for index, row in common_items_export.iterrows():
 # Exporting to CSV
 common_items_export.to_csv(export_loc, index=False, encoding='utf-8-sig')
 print("\nCommon items exported successfully.\n")
-
