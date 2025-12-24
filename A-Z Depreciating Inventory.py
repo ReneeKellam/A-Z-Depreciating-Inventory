@@ -1,5 +1,6 @@
 # Inventory Depreciation Script, Compares current and past inventory files to find common items
 # and then marks them as inactive for depreciation purposes.
+# Designed for use with Sage50/Peachtree using only default values
 # Designed to run on a fresh instance of Python with no pre-installed packages
 
 # Editable Variables
@@ -95,9 +96,9 @@ common_items = common_items[~common_items['Item ID'].isin(problematic_items)]
 
 # Output comparison results
 print("\nComparison Results:")
-print(f"Total items in invcurrent: {len(invcurrent)}")
-print(f"Total items in invpast: {len(invpast)}")
-print(f"Common items found: {len(common_items)}")
+print(f"Active items in current inventory: {len(invcurrent)}")
+print(f"Active items in past inventory:    {len(invpast)}")
+print(f"Common items found:                {len(common_items)}")
 
 # Preparing export dataframe
 common_items_export = common_items[['Item ID', "Inactive", 'Description for Sales', "Part Number"]].reset_index(drop=True)
@@ -107,6 +108,13 @@ common_items_export = common_items_export.astype({
     'Description for Sales': 'str',
     'Part Number': 'str'
 })
+
+total_sales_price = common_items_export['Sales Price 1'].sum()
+total_last_unit_cost = common_items_export['Last Unit Cost'].sum()
+print("\nSales Price Vs Cost")
+print(f"Gross Sales Price:  ${total_sales_price:,.2f}")
+print(f"Gross Cost:         ${total_last_unit_cost:,.2f}")
+print(f"Sales Price - Cost: ${total_sales_price - total_last_unit_cost:,.2f}")
 
 # Adding in depreciated inventory information to the export
 for index, row in common_items_export.iterrows():
@@ -133,4 +141,5 @@ for index, row in common_items_export.iterrows():
 # Exporting to CSV
 common_items_export.to_csv(export_loc, index=False, encoding='utf-8-sig')
 print("\nCommon items exported successfully.\n")
+
 
